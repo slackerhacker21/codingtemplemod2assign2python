@@ -1,0 +1,170 @@
+# Base Character class
+class Character:
+    def __init__(self, name, health, attack_power):
+        self.name = name
+        self.health = health
+        self.attack_power = attack_power
+        self.max_health = health  
+
+    def attack(self, opponent):
+        opponent.health -= self.attack_power
+        print(f"{self.name} attacks {opponent.name} for {self.attack_power} damage!")
+        if opponent.health <= 0:
+            print(f"{opponent.name} has been defeated!")
+
+    def display_stats(self):
+        print(f"{self.name}'s Stats - Health: {self.health}/{self.max_health}, Attack Power: {self.attack_power}")
+
+# Warrior class (inherits from Character)
+class Warrior(Character):
+    def __init__(self, name):
+        super().__init__(name, health=140, attack_power=25)
+
+# Mage class (inherits from Character)
+class Mage(Character):
+    def __init__(self, name):
+        import random
+
+class Character:
+    def __init__(self, name, health, attack_min, attack_max):
+        self.name = name
+        self.max_health = health
+        self.health = health
+        self.attack_min = attack_min
+        self.attack_max = attack_max
+
+    def attack(self, target):
+        damage = random.randint(self.attack_min, self.attack_max)
+        target.health -= damage
+        print(f"{self.name} attacks {target.name} for {damage} damage!")
+        if target.health <= 0:
+            print(f"{target.name} has been defeated!")
+        return damage # Return damage dealt
+
+    def heal(self, amount):
+        self.health = min(self.max_health, self.health + amount)
+        print(f"{self.name} heals for {amount} health. Current health: {self.health}")
+
+    def stats(self):
+        print(f"{self.name}: Health: {self.health}/{self.max_health}")
+
+class Archer(Character):
+    def __init__(self, name):
+        super().__init__(name, 80, 15, 25)
+
+    def quick_shot(self, target):
+        damage = self.attack(target)  # First arrow
+        damage += self.attack(target) # Second arrow
+        print(f"{self.name} uses Quick Shot!")
+        return damage
+
+    def evade(self):
+        print(f"{self.name} prepares to evade the next attack!")
+        return "evade" # Return special string
+
+class Paladin(Character):
+    def __init__(self, name):
+        super().__init__(name, 120, 10, 20)
+
+    def holy_strike(self, target):
+        bonus_damage = random.randint(5,10)
+        damage = self.attack(target) + bonus_damage
+        print(f"{self.name} uses Holy Strike for {bonus_damage} bonus damage!")
+        return damage
+
+    def divine_shield(self):
+        print(f"{self.name} activates Divine Shield!")
+        return "shield"
+
+
+class EvilWizard(Character):
+    def __init__(self, name):
+      super().__init__(name, 150, 20, 30)
+      self.regen_rate = 10
+
+    def attack(self, target):
+        damage = super().attack(target)
+        return damage
+
+    def regenerate(self):
+        self.heal(self.regen_rate)
+        print(f"{self.name} regenerates!")
+
+
+def battle(player, wizard):
+    evading = False
+    shielded = False
+
+    while player.health > 0 and wizard.health > 0:
+        player.stats()
+        wizard.stats()
+
+        print("\nYour turn:")
+        print("1. Attack")
+        print("2. Heal")
+        print("3. Quick Shot (Archer)")
+        print("4. Evade (Archer)")
+        print("5. Holy Strike (Paladin)")
+        print("6. Divine Shield (Paladin)")
+        choice = input("Enter your choice: ")
+
+        wizard_attacked = False # Flag to track if the wizard has attacked
+
+        if choice == '1':
+            wizard_attacked = True
+            player.attack(wizard)
+        elif choice == '2':
+            player.heal(20)
+        elif choice == '3' and isinstance(player, Archer):
+            wizard_attacked = True
+            player.quick_shot(wizard)
+        elif choice == '4' and isinstance(player, Archer):
+            evading = True
+            player.evade()
+        elif choice == '5' and isinstance(player, Paladin):
+            wizard_attacked = True
+            player.holy_strike(wizard)
+        elif choice == '6' and isinstance(player, Paladin):
+            shielded = True
+            player.divine_shield()
+        else:
+            print("Invalid choice.")
+            continue
+
+        if wizard.health > 0: # Wizard's turn only if still alive
+            wizard.regenerate()
+            if not evading and not shielded:
+                wizard.attack(player)
+                wizard_attacked = True # Wizard attacked if not evaded/shielded
+            elif evading:
+                print(f"Wizard's attack missed!")
+                evading = False
+            elif shielded:
+                print(f"Attack blocked by Divine Shield!")
+                shielded = False
+
+        if player.health <= 0:
+            print("\nYou have been defeated!")
+            return
+        elif wizard.health <= 0:
+            print("\nYou have defeated the Evil Wizard!")
+            return
+
+        if not wizard_attacked and wizard.health > 0:
+          wizard.attack(player) # Wizard attacks if it hasn't already
+
+# Example usage:
+player_name = input("Enter your hero's name: ")
+player_class = input("Choose your class (Archer/Paladin): ").lower()
+
+if player_class == "archer":
+    player = Archer(player_name)
+elif player_class == "paladin":
+    player = Paladin(player_name)
+else:
+    print("Invalid class choice.")
+    exit()
+
+wizard = EvilWizard("Zarthus")
+
+battle(player, wizard)
